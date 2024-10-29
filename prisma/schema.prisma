@@ -7,13 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Users {
-  id          String   @id @default(cuid())
-  username    String   @unique
-  password    String
-  first_name  String
-  middle_name String?
-  last_name   String
-  active      Boolean
-  internal    Boolean
+model User {
+  id        Int     @id @default(autoincrement())
+  username  String  @unique
+  password  String
+  firstName String
+  lastName  String
+  email     String  @unique
+  active    Boolean @default(true)
+  createdAt DateTime @default(now())
+  role      String  @default("admin") // Add the role field with a default value
+}
+
+model Role {
+
 }

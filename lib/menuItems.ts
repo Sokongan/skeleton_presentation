@@ -1,9 +1,18 @@
+// menuItems.ts
+import {
+    Home,
+    LineChart,
+    Package,
+    ShoppingCart,
+    Users,
+} from "lucide-react";
+
 export const menuItems = [
     {
         title: "MENU",
         items: [
             {
-                icon: "/home.png",
+                icon: Home,
                 label: "Home",
                 href: "/",
                 visible: ["admin", "user"],
@@ -14,21 +23,27 @@ export const menuItems = [
         title: "OTHER",
         items: [
             {
-                icon: "/profile.png",
+                icon: Users,
                 label: "Profile",
                 href: "/profile",
-                visible: ["admin", 'user'],
+                visible: ["admin", "user"],
             },
             {
-                icon: "/setting.png",
+                icon: ShoppingCart,
                 label: "Settings",
                 href: "/settings",
                 visible: ["admin", "user"],
             },
             {
-                icon: "/logout.png",
+                icon: Package,
                 label: "Logout",
                 href: "/logout",
+                visible: ["admin", "user"],
+            },
+            {
+                icon: LineChart,
+                label: "Analytics",
+                href: "/analytics",
                 visible: ["admin", "user"],
             },
         ],

@@ -4,10 +4,8 @@ import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardFooter,
     CardHeader,
-    CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,10 +13,10 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export const description = "A simple login form with email and password. The submit button says 'Sign in'.";
+export const description = "A simple login form with username and password. The submit button says 'Sign in'.";
 
 export function LoginForm() {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');  // Updated from 'email' to 'username'
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const router = useRouter();
@@ -26,18 +24,17 @@ export function LoginForm() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        router.push('/dashboard');
-        // const res = await signIn('credentials', {
-        //     redirect: false,
-        //     email, // send the email as username for the login
-        //     password,
-        // });
-        //
-        // if (res?.error) {
-        //     setError('Invalid credentials, please try again.');
-        // } else {
-        //     router.push('/dashboard'); // Redirect to dashboard after login
-        // }
+        const res = await signIn('credentials', {
+            redirect: false,
+            username,  // Updated from 'email' to 'username'
+            password,
+        });
+
+        if (res?.error) {
+            setError('Invalid credentials, please try again.');
+        } else {
+            router.push('/dashboard'); // Redirect to dashboard after login
+        }
     };
 
     return (
@@ -47,19 +44,19 @@ export function LoginForm() {
                     <div className="grid gap-2 text-center">
                         <h1 className="text-3xl font-bold">DOJ Skeleton App</h1>
                         <p className="text-balance text-muted-foreground">
-                            Enter your email below to login to your account
+                            Enter your username below to login to your account
                         </p>
                     </div>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="username">Username</Label> {/* Updated label */}
                         <Input
-                            id="email"
-                            type="email"
-                            placeholder="m@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            id="username"
+                            type="text"  // Username is usually a text field
+                            placeholder="Enter your username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}  // Updated handler
                             required
                         />
                     </div>

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `user` ADD COLUMN `role` VARCHAR(191) NOT NULL DEFAULT 'admin',
+    MODIFY `active` BOOLEAN NOT NULL DEFAULT true;
