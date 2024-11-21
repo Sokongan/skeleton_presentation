@@ -8,17 +8,184 @@ datasource db {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  username  String  @unique
+  id        Int        @id @default(autoincrement())
+  username  String     @unique
   password  String
   firstName String
   lastName  String
-  email     String  @unique
-  active    Boolean @default(true)
-  createdAt DateTime @default(now())
-  role      String  @default("admin") // Add the role field with a default value
+  email     String     @unique
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  roles     Role[]     @relation("User Roles") // Many-to-many relation with Role
+  UserRole  UserRole[]
 }
 
 model Role {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique // e.g., "admin", "editor", "user"
+  description    String? // Optional description of the role
+  users          User[]           @relation("User Roles") // Many-to-many relation with User
+  permissions    Permission[]     @relation("RolePermissions") // Many-to-many relation with Permission
+  UserRole       UserRole[]
+  RolePermission RolePermission[]
+}
 
+model Permission {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique // e.g., "create_user", "delete_post"
+  description    String? // Optional description of the permission
+  roles          Role[]           @relation("RolePermissions") // Many-to-many relation with Role
+  RolePermission RolePermission[]
+}
+
+// Join table for User and Role
+model UserRole {
+  userId Int
+  roleId Int
+  user   User @relation(fields: [userId], references: [id])
+  role   Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId]) // Composite primary key
+}
+
+// Join table for Role and Permission
+model RolePermission {
+  roleId       Int
+  permissionId Int
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId]) // Composite primary key
+}
+
+model Employee {
+  id                 Int                 @id @default(autoincrement())
+  employeeId         String              @unique
+  firstName          String
+  middleName         String?
+  lastName           String
+  suffix             String?
+  gender             String
+  birthplace         String?
+  birthdate          DateTime?
+  civilStatus        String
+  bloodType          String?
+  citizenship        String?
+  religion           String?
+  mobileNo           String?
+  email              String
+  weight             Float?
+  height             Float?
+  residentialAddress String?
+  position           String
+  department         String
+  bio                String?
+  spouse             Spouse?
+  parents            Parents?
+  officeInfo         OfficeInfo?
+  educationalRecords EducationalRecord[]
+  eligibilityRecords EligibilityRecord[]
+  attachments        Attachment[]
+  workExperience     WorkExperience[]
+}
+
+model Spouse {
+  id              Int      @id @default(autoincrement())
+  employeeId      Int      @unique
+  lastName        String
+  firstName       String
+  middleName      String?
+  occupation      String?
+  employer        String?
+  telephone       String?
+  employerAddress String?
+  employee        Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Parents {
+  id               Int      @id @default(autoincrement())
+  employeeId       Int      @unique
+  fatherLastName   String?
+  fatherFirstName  String?
+  fatherMiddleName String?
+  motherLastName   String?
+  motherFirstName  String?
+  motherMiddleName String?
+  employee         Employee @relation(fields: [employeeId], references: [id])
+}
+
+model OfficeInfo {
+  id                 Int                 @id @default(autoincrement())
+  employeeId         Int                 @unique
+  plantilla          String?
+  office             String?
+  detailedTo         String?
+  directLine         String?
+  local              String?
+  facsimile          String?
+  salaryGrade        String?
+  step               String?
+  premiums           String?
+  tin                String?
+  gsis               String?
+  phic               String?
+  pagibig            String?
+  umid               String?
+  appointmentDetails AppointmentDetails?
+  employee           Employee            @relation(fields: [employeeId], references: [id])
+}
+
+model AppointmentDetails {
+  id                         Int        @id @default(autoincrement())
+  officeInfoId               Int        @unique
+  otherGovAgency             DateTime?
+  dojAppointment             DateTime?
+  presentPositionAppointment DateTime?
+  assumptionPresentPosition  DateTime?
+  noGap                      String?
+  terminationDate            DateTime?
+  officeInfo                 OfficeInfo @relation(fields: [officeInfoId], references: [id])
+}
+
+model EducationalRecord {
+  id            Int      @id @default(autoincrement())
+  employeeId    Int
+  level         String
+  school        String
+  course        String
+  yearGraduated String?
+  units         String?
+  yearsAttended String?
+  honors        String?
+  employee      Employee @relation(fields: [employeeId], references: [id])
+}
+
+model EligibilityRecord {
+  id            Int       @id @default(autoincrement())
+  employeeId    Int
+  eligibility   String
+  rating        String?
+  examDate      DateTime?
+  place         String?
+  licenseNumber String?
+  releaseDate   DateTime?
+  employee      Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model Attachment {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  fileName   String
+  fileSize   Int
+  uploadDate DateTime
+  fileType   String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+}
+
+model WorkExperience {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  action     String
+  date       DateTime
+  employee   Employee @relation(fields: [employeeId], references: [id])
 }

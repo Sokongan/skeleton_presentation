@@ -1,46 +1,67 @@
-// Sidebar.tsx
-import Link from "next/link";
-import { useSession } from "next-auth/react"; // Import the session hook
-import { menuItems } from "../lib/menuItems"; // Adjust the import path as needed
+import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
 
-export function Sidebar() {
-    const { data: session } = useSession(); // Get session data
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar"
 
-    return (
-        <div className="hidden border-r bg-muted/40 md:block">
-            <div className="flex h-full max-h-screen flex-col gap-2">
-                <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-                    <Link href="/" className="flex items-center gap-2 font-semibold">
-                        <span className="">DOJ Skeleton App</span>
-                    </Link>
-                </div>
-                <div className="flex-1">
-                    {menuItems.map((menu) => (
-                        <div key={menu.title} className="px-2">
-                            <h2 className="font-semibold text-sm">{menu.title}</h2>
-                            <nav className="grid items-start gap-1 text-sm font-medium lg:px-4">
-                                {menu.items.map((item) => {
-                                    // Check if the current user has permission to see the item
-                                    const isVisible = item.visible.includes(session?.user?.role); // Adjust according to how roles are structured
+// Menu items.
+const items = [
+  {
+    title: "Home",
+    url: "#",
+    icon: Home,
+  },
+  {
+    title: "Inbox",
+    url: "#",
+    icon: Inbox,
+  },
+  {
+    title: "Calendar",
+    url: "#",
+    icon: Calendar,
+  },
+  {
+    title: "Search",
+    url: "#",
+    icon: Search,
+  },
+  {
+    title: "Settings",
+    url: "#",
+    icon: Settings,
+  },
+]
 
-                                    return (
-                                        isVisible && (
-                                            <Link
-                                                key={item.label}
-                                                href={item.href}
-                                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                                            >
-                                                <item.icon className="h-4 w-4" />
-                                                {item.label}
-                                            </Link>
-                                        )
-                                    );
-                                })}
-                            </nav>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
+export function AppSidebar() {
+  return (
+    <Sidebar>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  )
 }

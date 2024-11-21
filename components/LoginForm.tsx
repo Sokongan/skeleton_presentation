@@ -11,29 +11,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export const description = "A simple login form with username and password. The submit button says 'Sign in'.";
 
 export function LoginForm() {
-    const [username, setUsername] = useState('');  // Updated from 'email' to 'username'
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         const res = await signIn('credentials', {
-            redirect: false,
-            username,  // Updated from 'email' to 'username'
+            redirect: true,
+            username,
             password,
+            callbackUrl: '/employees'
         });
 
         if (res?.error) {
             setError('Invalid credentials, please try again.');
-        } else {
-            router.push('/dashboard'); // Redirect to dashboard after login
         }
     };
 
@@ -50,13 +47,13 @@ export function LoginForm() {
                 </CardHeader>
                 <CardContent className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="username">Username</Label> {/* Updated label */}
+                        <Label htmlFor="username">Username</Label>
                         <Input
                             id="username"
-                            type="text"  // Username is usually a text field
+                            type="text"
                             placeholder="Enter your username"
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}  // Updated handler
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                         />
                     </div>
