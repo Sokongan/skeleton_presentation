@@ -15,8 +15,17 @@ export default function ProtectedLayout({ children }: { children?: ReactNode }) 
   const pathname = usePathname();
 
   useEffect(() => {
+    if (status === 'loading') return; // Wait for session to load
     if (status === 'unauthenticated') {
       router.push('/login');
+    } else if (status === 'authenticated') {
+      const userRoles = session.user.roles; // Assuming roles are stored in session
+      const requiredRoles = ['Admin','User']; // Define required roles for this route
+
+      const hasAccess = userRoles.some(role => requiredRoles.includes(role));
+      if (!hasAccess) {
+        router.push('/unauthorized'); // Redirect to an unauthorized page or another route
+      }
     }
   }, [status, router]);
 
@@ -41,23 +50,18 @@ export default function ProtectedLayout({ children }: { children?: ReactNode }) 
       ];
     }
     
-    // Regular breadcrumb generation
     pathParts.forEach((part, index) => {
       const href = `/${pathParts.slice(0, index + 1).join('/')}`;
       const isLast = index === pathParts.length - 1;
       
-      // Skip certain routes if needed
       if (part === 'protected') return;
 
-      // Format the display text
       let displayText = capitalizeFirstLetter(decodeURIComponent(part));
       
-      // Special cases for specific routes
       switch (part) {
         case 'employees':
           displayText = 'Employees';
           break;
-        // Add more cases as needed
       }
 
       if (isLast) {
@@ -81,18 +85,10 @@ export default function ProtectedLayout({ children }: { children?: ReactNode }) 
     return breadcrumbs;
   };
 
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   if (status === 'authenticated') {
     return (
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar user={session.user} />
         <SidebarInset>
           <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-background transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">

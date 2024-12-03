@@ -11,15 +11,9 @@ export function AuthRedirect({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (status === 'loading') return;
 
-    const redirectTimer = setTimeout(() => {
-      if (status === 'unauthenticated') {
-        router.push('/login');
-      } else if (status === 'authenticated' && session?.user) {
-        router.push('/employees');
-      }
-    }, 2000);
-
-    return () => clearTimeout(redirectTimer);
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
   }, [session, status, router]);
 
   if (status === 'loading') {

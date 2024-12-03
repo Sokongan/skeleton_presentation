@@ -1,28 +1,22 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CardContent } from "@/components/ui/card"
-import type { Employee } from '@/app/(protected)/employees/actions'
+import { Employee } from '@prisma/client'
 
 interface EmployeeListProps {
   initialEmployees: Employee[]
 }
 
 export function EmployeeList({ initialEmployees }: EmployeeListProps) {
-  const router = useRouter()
-
-  const handleRowClick = (employeeId: number) => {
-    router.push(`/employees/${employeeId}`, { scroll: false })
-  }
-
   return (
-    <CardContent>
+    <CardContent className="p-0">
       {initialEmployees.length > 0 ? (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Employee ID</TableHead>
+              <TableHead>Employee ID</TableHead>
               <TableHead>Full Name</TableHead>
               <TableHead>Position</TableHead>
               <TableHead>Department</TableHead>
@@ -32,15 +26,49 @@ export function EmployeeList({ initialEmployees }: EmployeeListProps) {
           <TableBody>
             {initialEmployees.map((employee) => (
               <TableRow 
-                key={employee.id} 
-                onClick={() => handleRowClick(employee.id)}
+                key={employee.id}
                 className="cursor-pointer hover:bg-muted/50"
               >
-                <TableCell className="font-medium">{employee.employeeId}</TableCell>
-                <TableCell>{`${employee.lastName}, ${employee.firstName}`}</TableCell>
-                <TableCell>{employee.position}</TableCell>
-                <TableCell>{employee.department}</TableCell>
-                <TableCell>{employee.email}</TableCell>
+                <TableCell className="font-medium">
+                  <Link 
+                    href={`/employees/${employee.id}`}
+                    className="block w-full h-full"
+                  >
+                    {employee.employeeId}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <Link 
+                    href={`/employees/${employee.id}`}
+                    className="block w-full h-full"
+                  >
+                    {`${employee.lastName}, ${employee.firstName}`}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <Link 
+                    href={`/employees/${employee.id}`}
+                    className="block w-full h-full"
+                  >
+                    {employee.position}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <Link 
+                    href={`/employees/${employee.id}`}
+                    className="block w-full h-full"
+                  >
+                    {employee.department}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <Link 
+                    href={`/employees/${employee.id}`}
+                    className="block w-full h-full"
+                  >
+                    {employee.email}
+                  </Link>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

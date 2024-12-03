@@ -1,167 +1,378 @@
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient()
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+const prisma = new PrismaClient();
 
 async function main() {
-  // Create Employee with related records
+  console.log("Seeding database...");
+
+  // Clean up existing data
+  await prisma.rolePermission.deleteMany({});
+  await prisma.permission.deleteMany({});
+  await prisma.user.deleteMany({});
+  await prisma.role.deleteMany({});
+
+  // Seed Roles
+  const adminRole = await prisma.role.upsert({
+    where: { name: "Admin" },
+    update: {},
+    create: {
+      name: "Admin",
+      description: "Administrator role with full permissions",
+    },
+  });
+
+  const userRole = await prisma.role.upsert({
+    where: { name: "User" },
+    update: {},
+    create: {
+      name: "User",
+      description: "Default user role with limited permissions",
+    },
+  });
+
+  // Seed Permissions
+  const manageUsersPermission = await prisma.permission.create({
+    data: {
+      name: "Manage Users",
+      description: "Permission to manage users",
+    },
+  });
+
+  // Assign Permissions to Roles
+  await prisma.rolePermission.create({
+    data: {
+      roleId: adminRole.id,
+      permissionId: manageUsersPermission.id,
+    },
+  });
+
+  // Seed Users
+  const hashedPassword = await bcrypt.hash("@dminp@ssw0rd", 10);
+
+  // Create Admin User
+  const adminUser = await prisma.user.create({
+    data: {
+      username: "asd_admin",
+      password: hashedPassword,
+      firstName: "System",
+      lastName: "Administrator",
+      email: "admin@example.com",
+      UserRole: {
+        create: {
+          roleId: adminRole.id
+        }
+      }
+    },
+  });
+
+  console.log("Admin user seeded!");
+
+  // Create Non-Admin User
+  const nonAdminUser = await prisma.user.create({
+    data: {
+      username: "asd_user",
+      password: hashedPassword, // Hash the password
+      firstName: "User",
+      lastName: "Only",
+      email: "user@example.com",
+      UserRole: {
+        create: {
+          roleId: userRole.id // Assign the user role
+        }
+      }
+    },
+  });
+
+  console.log("Non-admin user seeded!");
+
+  // Seed Employees
   const employee = await prisma.employee.create({
     data: {
       employeeId: "EMP001",
       firstName: "John",
-      middleName: "Robert",
       lastName: "Doe",
       gender: "Male",
-      civilStatus: "Married",
+      birthdate: new Date("1990-01-01"),
+      position: "Software Developer",
+      department: "IT",
       email: "john.doe@example.com",
-      position: "Senior Developer",
-      department: "IT Department",
-      
-      // Create Spouse
-      spouse: {
+      officeDetails: {
         create: {
-          firstName: "Jane",
-          lastName: "Doe",
-          occupation: "Teacher",
-          employer: "Local School District"
-        }
+          plantilla: "101",
+          office: "IT Department",
+          salaryGrade: "12",
+          step: "1",
+        },
       },
-
-      // Create Parents
-      parents: {
+      familyBackground: {
         create: {
-          fatherFirstName: "James",
-          fatherLastName: "Doe",
-          motherFirstName: "Mary",
-          motherLastName: "Smith"
-        }
+          spouseFirstname: "Jane",
+          spouseLastname: "Doe",
+        },
       },
-
-      // Create Office Info with Appointment Details
-      officeInfo: {
-        create: {
-          plantilla: "IT-IV",
-          office: "Main Office",
-          salaryGrade: "SG-18",
-          tin: "123-456-789",
-          gsis: "GSIS-123",
-          appointmentDetails: {
-            create: {
-              dojAppointment: new Date("2020-01-15"),
-              presentPositionAppointment: new Date("2022-03-01")
-            }
-          }
-        }
-      },
-
-      // Create Educational Records
-      educationalRecords: {
+      educationRecords: {
         create: [
           {
-            level: "College",
-            school: "State University",
+            level: "Tertiary",
+            school: "University of Example",
             course: "Computer Science",
-            yearGraduated: "2015",
-            honors: "Cum Laude"
+            yearGraduated: "2012",
           },
-          {
-            level: "High School",
-            school: "City High School",
-            course: "General Academic",
-            yearGraduated: "2011"
-          }
-        ]
+        ],
       },
-
-      // Create Eligibility Records
-      eligibilityRecords: {
+      workExperiences: {
         create: [
           {
-            eligibility: "Civil Service Professional",
-            rating: "85.23",
-            examDate: new Date("2016-06-15"),
-            licenseNumber: "CSP-2016-123"
-          }
-        ]
-      },
-
-      // Create Work Experience
-      workExperience: {
-        create: [
-          {
-            action: "Initial Appointment",
-            date: new Date("2020-01-15")
+            position: "Junior Developer",
+            company: "Example Corp",
+            startDate: new Date("2013-01-01"),
+            endDate: new Date("2015-01-01"),
+            salary: 30000,
           },
-          {
-            action: "Promotion",
-            date: new Date("2022-03-01")
-          }
-        ]
+        ],
       },
+    },
+  });
 
-      // Create Attachments
-      attachments: {
-        create: [
-          {
-            fileName: "resume.pdf",
-            fileSize: 1024576, // 1MB
-            uploadDate: new Date(),
-            fileType: "application/pdf"
+  console.log("Employees seeded!");
+
+  // Additional Employees
+  const employees = await Promise.all([
+    prisma.employee.create({
+      data: {
+        employeeId: "EMP002",
+        firstName: "Maria",
+        lastName: "Santos",
+        gender: "Female",
+        birthdate: new Date("1988-05-15"),
+        position: "Legal Researcher",
+        department: "Legal",
+        email: "maria.santos@example.com",
+        officeDetails: {
+          create: {
+            plantilla: "202",
+            office: "Legal Division",
+            salaryGrade: "15",
+            step: "3",
           },
-          {
-            fileName: "profile-picture.jpg",
-            fileSize: 512000, // 500KB
-            uploadDate: new Date(),
-            fileType: "image/jpeg"
-          }
-        ]
-      }
-    }
-  })
-
-  // Create a second employee with different details
-  const employee2 = await prisma.employee.create({
-    data: {
-      employeeId: "EMP002",
-      firstName: "Maria",
-      lastName: "Garcia",
-      gender: "Female",
-      civilStatus: "Single",
-      email: "maria.garcia@example.com",
-      position: "HR Manager",
-      department: "Human Resources",
-
-      officeInfo: {
-        create: {
-          plantilla: "HR-III",
-          office: "HR Department",
-          salaryGrade: "SG-16",
-          appointmentDetails: {
-            create: {
-              dojAppointment: new Date("2019-05-01")
-            }
-          }
-        }
+        },
+        familyBackground: {
+          create: {
+            spouseFirstname: "Miguel",
+            spouseLastname: "Santos",
+          },
+        },
+        educationRecords: {
+          create: [
+            {
+              level: "Tertiary",
+              school: "University of Manila",
+              course: "Bachelor of Laws",
+              yearGraduated: "2010",
+            },
+            {
+              level: "Post Graduate",
+              school: "Manila Law School",
+              course: "Juris Doctor",
+              yearGraduated: "2014",
+            },
+          ],
+        },
+        workExperiences: {
+          create: [
+            {
+              position: "Junior Legal Researcher",
+              company: "Law Firm Associates",
+              startDate: new Date("2014-06-01"),
+              endDate: new Date("2018-12-31"),
+              salary: 45000,
+            },
+          ],
+        },
       },
+    }),
 
-      educationalRecords: {
-        create: {
-          level: "Masters",
-          school: "Management University",
-          course: "Human Resource Management",
-          yearGraduated: "2018"
-        }
-      }
-    }
-  })
+    prisma.employee.create({
+      data: {
+        employeeId: "EMP003",
+        firstName: "Robert",
+        lastName: "Cruz",
+        gender: "Male",
+        birthdate: new Date("1992-09-23"),
+        position: "Administrative Officer",
+        department: "Administration",
+        email: "robert.cruz@example.com",
+        officeDetails: {
+          create: {
+            plantilla: "303",
+            office: "Administrative Services",
+            salaryGrade: "11",
+            step: "2",
+          },
+        },
+        familyBackground: {
+          create: {
+            spouseFirstname: "Patricia",
+            spouseLastname: "Cruz",
+          },
+        },
+        educationRecords: {
+          create: [
+            {
+              level: "Tertiary",
+              school: "Polytechnic University",
+              course: "Public Administration",
+              yearGraduated: "2013",
+            },
+          ],
+        },
+        workExperiences: {
+          create: [
+            {
+              position: "Administrative Assistant",
+              company: "Government Agency",
+              startDate: new Date("2013-08-01"),
+              endDate: new Date("2017-12-31"),
+              salary: 25000,
+            },
+          ],
+        },
+      },
+    }),
 
-  console.log({ employee, employee2 })
+    prisma.employee.create({
+      data: {
+        employeeId: "EMP004",
+        firstName: "Angela",
+        lastName: "Reyes",
+        gender: "Female",
+        birthdate: new Date("1985-12-03"),
+        position: "Senior Accountant",
+        department: "Finance",
+        email: "angela.reyes@example.com",
+        officeDetails: {
+          create: {
+            plantilla: "404",
+            office: "Finance Division",
+            salaryGrade: "16",
+            step: "4",
+          },
+        },
+        familyBackground: {
+          create: {
+            spouseFirstname: "Benjamin",
+            spouseLastname: "Reyes",
+          },
+        },
+        educationRecords: {
+          create: [
+            {
+              level: "Tertiary",
+              school: "University of Santo Tomas",
+              course: "Accountancy",
+              yearGraduated: "2006",
+            },
+            {
+              level: "Post Graduate",
+              school: "Asian Institute of Management",
+              course: "Master in Business Administration",
+              yearGraduated: "2010",
+            },
+          ],
+        },
+        workExperiences: {
+          create: [
+            {
+              position: "Junior Accountant",
+              company: "ABC Corporation",
+              startDate: new Date("2006-06-01"),
+              endDate: new Date("2010-05-31"),
+              salary: 28000,
+            },
+            {
+              position: "Accountant",
+              company: "XYZ Company",
+              startDate: new Date("2010-06-01"),
+              endDate: new Date("2015-12-31"),
+              salary: 45000,
+            },
+          ],
+        },
+      },
+    }),
+
+    prisma.employee.create({
+      data: {
+        employeeId: "EMP005",
+        firstName: "Michael",
+        lastName: "Tan",
+        gender: "Male",
+        birthdate: new Date("1991-07-18"),
+        position: "IT Security Specialist",
+        department: "IT",
+        email: "michael.tan@example.com",
+        officeDetails: {
+          create: {
+            plantilla: "505",
+            office: "IT Security Division",
+            salaryGrade: "14",
+            step: "2",
+          },
+        },
+        familyBackground: {
+          create: {
+            spouseFirstname: "Sarah",
+            spouseLastname: "Tan",
+          },
+        },
+        educationRecords: {
+          create: [
+            {
+              level: "Tertiary",
+              school: "Mapua Institute of Technology",
+              course: "Computer Engineering",
+              yearGraduated: "2012",
+            },
+            {
+              level: "Certification",
+              school: "CISCO Academy",
+              course: "Network Security",
+              yearGraduated: "2013",
+            },
+          ],
+        },
+        workExperiences: {
+          create: [
+            {
+              position: "Network Administrator",
+              company: "Tech Solutions Inc",
+              startDate: new Date("2012-08-01"),
+              endDate: new Date("2016-07-31"),
+              salary: 35000,
+            },
+            {
+              position: "Security Analyst",
+              company: "Cyber Defense Corp",
+              startDate: new Date("2016-08-01"),
+              endDate: new Date("2020-12-31"),
+              salary: 50000,
+            },
+          ],
+        },
+      },
+    }),
+  ]);
+
+  console.log("Additional employees seeded!");
+
+  console.log("Seeding completed successfully!");
 }
 
 main()
   .catch((e) => {
-    console.error(e)
-    process.exit(1)
+    console.error("Error during seeding:", e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  }) 
+    await prisma.$disconnect();
+  });

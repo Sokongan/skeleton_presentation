@@ -1,41 +1,30 @@
-// menuItems.ts
 import {
-    AudioWaveform,
     BookOpen,
-    Bot,
-    Command,
     ShieldCheck,
-    GalleryVerticalEnd,
-    SquareTerminal,
-    FileStack,
     Users,
 } from "lucide-react";
 
 export const menuItems = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
-    },
-    applications: [
-        {
-            name: "Acme Inc",
-            logo: GalleryVerticalEnd,
-            plan: "Enterprise",
-        }
-    ],
-    navMain: [
+    main: [
         {
             name: "Employees",
             url: "/employees",
-            icon: Users
-        },
+            icon: Users,
+            roles: ["admin", "user"],
+        }
     ],
     system: [
         {
             name: "Access Management",
             url: "/access-management",
             icon: ShieldCheck,
+            roles: ["admin"],
+        },
+        {
+            name: "Library",
+            url: "/library",
+            icon: BookOpen,
+            roles: ["admin"],
         },
     ],
 }

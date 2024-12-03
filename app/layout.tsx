@@ -3,7 +3,7 @@
 import "@/styles/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "next-auth/react";
-import { AuthRedirect } from "@/components/auth-redirect"; // Extracted logic to a separate component
+import { AuthRedirect } from "@/components/auth-redirect";
 
 interface RootLayoutProps {
   children: React.ReactNode;

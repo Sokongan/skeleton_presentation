@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
+  id        String     @id @default(cuid())
   username  String     @unique
   password  String
   firstName String
@@ -16,176 +16,204 @@ model User {
   email     String     @unique
   active    Boolean    @default(true)
   createdAt DateTime   @default(now())
-  roles     Role[]     @relation("User Roles") // Many-to-many relation with Role
+  roles     Role[]     @relation("User Roles")
   UserRole  UserRole[]
 }
 
 model Role {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique // e.g., "admin", "editor", "user"
-  description    String? // Optional description of the role
-  users          User[]           @relation("User Roles") // Many-to-many relation with User
-  permissions    Permission[]     @relation("RolePermissions") // Many-to-many relation with Permission
+  id             String           @id @default(cuid())
+  name           String           @unique
+  description    String?
+  users          User[]           @relation("User Roles")
+  permissions    Permission[]     @relation("RolePermissions")
   UserRole       UserRole[]
   RolePermission RolePermission[]
 }
 
 model Permission {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique // e.g., "create_user", "delete_post"
-  description    String? // Optional description of the permission
-  roles          Role[]           @relation("RolePermissions") // Many-to-many relation with Role
+  id             String           @id @default(cuid())
+  name           String           @unique
+  description    String?
+  roles          Role[]           @relation("RolePermissions")
   RolePermission RolePermission[]
 }
 
-// Join table for User and Role
 model UserRole {
-  userId Int
-  roleId Int
-  user   User @relation(fields: [userId], references: [id])
-  role   Role @relation(fields: [roleId], references: [id])
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id])
+  role   Role   @relation(fields: [roleId], references: [id])
 
-  @@id([userId, roleId]) // Composite primary key
+  @@id([userId, roleId])
 }
 
-// Join table for Role and Permission
 model RolePermission {
-  roleId       Int
-  permissionId Int
+  roleId       String
+  permissionId String
   role         Role       @relation(fields: [roleId], references: [id])
   permission   Permission @relation(fields: [permissionId], references: [id])
 
-  @@id([roleId, permissionId]) // Composite primary key
+  @@id([roleId, permissionId])
 }
 
 model Employee {
-  id                 Int                 @id @default(autoincrement())
-  employeeId         String              @unique
-  firstName          String
-  middleName         String?
-  lastName           String
-  suffix             String?
-  gender             String
-  birthplace         String?
-  birthdate          DateTime?
-  civilStatus        String
-  bloodType          String?
-  citizenship        String?
-  religion           String?
-  mobileNo           String?
-  email              String
-  weight             Float?
-  height             Float?
+  id                String    @id @default(cuid())
+  employeeId        String    @unique
+  firstName         String
+  middleName        String?
+  lastName          String
+  suffix            String?
+  gender           String?
+  birthplace       String?
+  birthdate        DateTime?
+  civilStatus      String?
+  bloodType        String?
+  citizenship      String?
+  religion         String?
+  mobileNo         String?
+  email            String?
+  weight           Float?
+  height           Float?
   residentialAddress String?
-  position           String
-  department         String
-  bio                String?
-  spouse             Spouse?
-  parents            Parents?
-  officeInfo         OfficeInfo?
-  educationalRecords EducationalRecord[]
+  position         String?
+  department       String?
+  bio              String?    @db.Text
+
+  // Relations
+  familyBackground   FamilyBackground?
+  officeDetails     OfficeDetails?
+  educationRecords  EducationRecord[]
   eligibilityRecords EligibilityRecord[]
-  attachments        Attachment[]
-  workExperience     WorkExperience[]
+  workExperiences   WorkExperience[]
+  trainingPrograms  TrainingProgram[]
+  references        Reference[]
+  attachments       Attachment[]
 }
 
-model Spouse {
-  id              Int      @id @default(autoincrement())
-  employeeId      Int      @unique
-  lastName        String
-  firstName       String
-  middleName      String?
-  occupation      String?
-  employer        String?
-  telephone       String?
-  employerAddress String?
-  employee        Employee @relation(fields: [employeeId], references: [id])
+model FamilyBackground {
+  id                    String   @id @default(cuid())
+  employeeId            String   @unique
+  spouseLastname        String?
+  spouseFirstname       String?
+  spouseMiddlename      String?
+  spouseOccupation      String?
+  spouseEmployer        String?
+  spouseTelephone       String?
+  spouseEmployerAddress String?
+  fatherLastname        String?
+  fatherFirstname       String?
+  fatherMiddlename      String?
+  motherLastname        String?
+  motherFirstname       String?
+  motherMiddlename      String?
+  
+  employee              Employee @relation(fields: [employeeId], references: [id])
 }
 
-model Parents {
-  id               Int      @id @default(autoincrement())
-  employeeId       Int      @unique
-  fatherLastName   String?
-  fatherFirstName  String?
-  fatherMiddleName String?
-  motherLastName   String?
-  motherFirstName  String?
-  motherMiddleName String?
-  employee         Employee @relation(fields: [employeeId], references: [id])
-}
-
-model OfficeInfo {
-  id                 Int                 @id @default(autoincrement())
-  employeeId         Int                 @unique
-  plantilla          String?
-  office             String?
-  detailedTo         String?
-  directLine         String?
-  local              String?
-  facsimile          String?
-  salaryGrade        String?
-  step               String?
-  premiums           String?
-  tin                String?
-  gsis               String?
-  phic               String?
-  pagibig            String?
-  umid               String?
-  appointmentDetails AppointmentDetails?
-  employee           Employee            @relation(fields: [employeeId], references: [id])
-}
-
-model AppointmentDetails {
-  id                         Int        @id @default(autoincrement())
-  officeInfoId               Int        @unique
-  otherGovAgency             DateTime?
-  dojAppointment             DateTime?
+model OfficeDetails {
+  id                        String   @id @default(cuid())
+  employeeId                String   @unique
+  plantilla                 String?
+  office                   String?
+  detailedTo               String?
+  directLine               String?
+  local                    String?
+  facsimile                String?
+  salaryGrade              String?
+  step                     String?
+  premiums                 String?
+  tin                      String?
+  gsis                     String?
+  phic                     String?
+  pagibig                  String?
+  umid                     String?
+  otherGovAgency           DateTime?
+  dojAppointment           DateTime?
   presentPositionAppointment DateTime?
-  assumptionPresentPosition  DateTime?
-  noGap                      String?
-  terminationDate            DateTime?
-  officeInfo                 OfficeInfo @relation(fields: [officeInfoId], references: [id])
+  assumptionPresentPosition DateTime?
+  noGap                    String?
+  terminationDate          DateTime?
+  
+  employee                 Employee @relation(fields: [employeeId], references: [id])
 }
 
-model EducationalRecord {
-  id            Int      @id @default(autoincrement())
-  employeeId    Int
+model EducationRecord {
+  id            String   @id @default(cuid())
+  employeeId    String
   level         String
   school        String
-  course        String
+  course        String?
   yearGraduated String?
   units         String?
-  yearsAttended String?
+  yearFrom      String?
+  yearTo        String?
   honors        String?
+  
   employee      Employee @relation(fields: [employeeId], references: [id])
 }
 
 model EligibilityRecord {
-  id            Int       @id @default(autoincrement())
-  employeeId    Int
+  id            String    @id @default(cuid())
+  employeeId    String
   eligibility   String
   rating        String?
   examDate      DateTime?
   place         String?
   licenseNumber String?
   releaseDate   DateTime?
-  employee      Employee  @relation(fields: [employeeId], references: [id])
-}
-
-model Attachment {
-  id         Int      @id @default(autoincrement())
-  employeeId Int
-  fileName   String
-  fileSize   Int
-  uploadDate DateTime
-  fileType   String
-  employee   Employee @relation(fields: [employeeId], references: [id])
+  
+  employee      Employee @relation(fields: [employeeId], references: [id])
 }
 
 model WorkExperience {
-  id         Int      @id @default(autoincrement())
-  employeeId Int
-  action     String
-  date       DateTime
-  employee   Employee @relation(fields: [employeeId], references: [id])
+  id            String   @id @default(cuid())
+  employeeId    String
+  position      String
+  company       String
+  startDate     DateTime
+  endDate       DateTime?
+  salary        Float?
+  salaryGrade   String?
+  appointmentStatus String?
+  isGovernmentService Boolean @default(false)
+  
+  employee      Employee @relation(fields: [employeeId], references: [id])
+}
+
+model TrainingProgram {
+  id            String   @id @default(cuid())
+  employeeId    String
+  title         String
+  type          String?
+  hours         Int?
+  conductor     String?
+  venue         String?
+  startDate     DateTime
+  endDate       DateTime
+  
+  employee      Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Reference {
+  id            String   @id @default(cuid())
+  employeeId    String
+  name          String
+  position      String?
+  company       String?
+  contactNumber String?
+  email         String?
+  
+  employee      Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Attachment {
+  id            String   @id @default(cuid())
+  employeeId    String
+  fileName      String
+  fileSize      Int
+  fileType      String
+  uploadDate    DateTime
+  filePath      String
+  storageUrl    String
+  employee      Employee @relation(fields: [employeeId], references: [id])
 }

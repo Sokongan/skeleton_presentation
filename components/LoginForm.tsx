@@ -4,33 +4,33 @@ import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
-    CardFooter,
     CardHeader,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation"; // Use next/navigation for app directory
 import { useState } from "react";
 
-export const description = "A simple login form with username and password. The submit button says 'Sign in'.";
-
-export function LoginForm() {
+const LoginForm = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        const res = await signIn('credentials', {
-            redirect: true,
+        
+        const result = await signIn('credentials', {
             username,
             password,
-            callbackUrl: '/employees'
+            redirect: false,
         });
 
-        if (res?.error) {
-            setError('Invalid credentials, please try again.');
+        if (result?.error) {
+            setError(result.error);
+        } else {
+            router.push('/employees');
         }
     };
 
@@ -68,13 +68,11 @@ export function LoginForm() {
                         />
                     </div>
                     {error && <p className="text-red-600">{error}</p>}
+                    <Button type="submit">Sign In</Button>
                 </CardContent>
-                <CardFooter>
-                    <Button className="w-full" type="submit">
-                        Sign in
-                    </Button>
-                </CardFooter>
             </form>
         </Card>
     );
-}
+};
+
+export default LoginForm; // Default export
